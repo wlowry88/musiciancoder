@@ -1,0 +1,230 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+    <title>Random Scale Practice</title>
+    <meta name="description" content="Practice random scales for jazz classical and pop music theory. It's a fun nerdy game"/>
+    <meta name="robots" content="index,follow"/>
+    <link rel="stylesheet" href="assets/sweetalert.css">
+    <link rel="stylesheet" href="assets/randomscale.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="assets/sweetalert.min.js"></script>
+    
+    <!-- Compiled and minified JavaScript -->
+  </head>
+  <body>
+    <div class="container">
+      <div class="row center-align">
+        <h1>Random Scale Practice</h1>
+      </div>
+      <div class="row center-align">
+        <h3 id='scale-name'>Click for a new scale!</h3>
+        <a id='new-scale-button' style="cursor:pointer;" class="waves-effect waves-light btn"><i class="material-icons left">music_note</i>New Scale</a>
+      </div>
+      <div class="row center-align">
+        <h4><span id="score">0/0 </span>Correct</h4>
+      </div>
+      <ul class="set">
+        <li id="0" class="note white-key c"></li>
+        <li id="1" class="note black-key cs"></li>
+        <li id="2" class="note white-key d"></li>
+        <li id="3" class="note black-key ds"></li>
+        <li id="4" class="note white-key e"></li>
+        <li style="z-index:-1;"class="black-key spacer"></li>
+        <li id="5" class="note white-key f"></li>
+        <li id="6" class="note black-key fs"></li>
+        <li id="7" class="note white-key g"></li>
+        <li id="8" class="note black-key gs"></li>
+        <li id="9" class="note white-key a"></li>
+        <li id="10" class="note black-key as"></li>
+        <li id="11" class="note white-key b"></li>
+        <li style="z-index:-1;"class="black-key spacer"></li>
+        <li id="12" class="note white-key c"></li>
+        <li id="13" class="note black-key cs"></li>
+        <li id="14" class="note white-key d"></li>
+        <li id="15" class="note black-key ds"></li>
+        <li id="16" class="note white-key e"></li>
+        <li style="z-index:-1;"class="black-key spacer"></li>
+        <li id="17" class="note white-key f"></li>
+        <li id="18" class="note black-key fs"></li>
+        <li id="19" class="note white-key g"></li>
+        <li id="20" class="note black-key gs"></li>
+        <li id="21" class="note white-key a"></li>
+        <li id="22" class="note black-key as"></li>
+        <li id="23" class="note white-key b"></li>
+        <li style="z-index:-1;"class="black-key spacer"></li>
+      </ul>
+    </div>
+    <script>
+      var scales = ['major', 'natural minor', 'harmonic minor', 'melodic minor', 'major pentatonic', 'minor pentatonic', 'blues', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'ionian', 'lochrian'];
+      var tonics = ['c', 'd-flat', 'd', 'e-flat', 'e', 'f', 'f-sharp', 'g', 'a-flat', 'a', 'b-flat', 'b'];
+      var masterTonic;
+      var masterScale;
+      var answer;
+      var offset;
+      var constructed;
+      var response = [];
+      var correctCount = 0;
+      var totalCount = 0;
+
+      function pickKeyAndScale(tonic, scale) {
+        var message = '';
+	if (tonic) {
+	  masterTonic = tonic;
+          message += tonic;
+	} else {
+	  masterTonic = getRandomElement(tonics);
+	  message += masterTonic;
+	}
+	if (scale) {
+	  masterScale = scale;
+          message += ' ' + scale;
+	} else {
+	  masterScale = getRandomElement(scales);
+	  message += ' ' + masterScale; 
+	}
+        return message;
+      }
+
+      function getRandomElement(array) {
+        return array[getRandomInt(0, array.length -1)];
+      }
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+
+      var keyboardNotes = []
+      for (var i = 1; i <= 24; i++) {
+        keyboardNotes.push(i)
+      }
+      var answers = {
+	'major': [0, 2, 4, 5, 7, 9, 11, 12],
+	'natural minor': [0, 2, 3, 5, 7, 8, 10, 12],
+	'harmonic minor': [0, 2, 3, 5, 7, 8, 11, 12],
+	'melodic minor': [0, 2, 3, 5, 7, 9, 11, 12],
+	'major pentatonic': [0, 2, 4, 7, 9, 12],
+	'minor pentatonic': [0, 3, 5, 7, 10, 12],
+	'blues': [0, 3, 5, 6, 7, 10, 12],
+	'dorian': [0, 2, 3, 5, 7, 9, 10, 12],
+	'phrygian': [0, 1, 3, 5, 7, 8, 10, 12],
+	'lydian': [0, 2, 4, 6, 7, 9, 11, 12],
+	'mixolydian': [0, 2, 4, 5, 7, 9, 10, 12],
+	'aeolian': [0, 2, 3, 5, 7, 8, 10, 12],
+	'lochrian': [0, 1, 3, 5, 6, 8, 10, 12],
+	'ionian': [0, 2, 4, 5, 7, 9, 11, 12]
+      }
+
+      function setOffset() {
+        return tonics.indexOf(masterTonic);
+      }
+
+      function constructRealAnswer(inputResponseArray, offset) {
+	constructed = [];
+	for (var i=0; i<inputResponseArray.length; i++) {
+	  constructed.push(inputResponseArray[i] - offset);
+	}
+        return constructed;
+      }
+
+      function evaluateResponse(inputResponseArray) {
+        offset = setOffset();
+	answer = answers[masterScale];
+        constructed = constructRealAnswer(inputResponseArray, offset);
+	for (var i = 0; i < answer.length; ++i) {
+          if (answer[i] !== constructed[i]) {
+            return incorrectAnswer(answer);
+          }
+        }
+        return correctAnswer();
+      }
+
+      function correctAnswer() {
+        correctCount += 1;
+        totalCount += 1;
+        swal('Correct!', 'You were right', 'success');
+        updateScore();
+        newScale(); 
+      }
+
+      function updateScore() {
+        document.getElementById('score').innerHTML = correctCount + '/' + totalCount + ' ';
+      }
+
+      function incorrectAnswer(response) {
+        totalCount += 1;
+        swal({
+          title: 'Oops',
+          text: "That wasn't quite it",
+          type: 'error',
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: 'Show me the answer',
+          cancelButtonText: 'Next one',
+          closeOnConfirm: true,
+          closeOnCancel: true 
+        },
+        function(isConfirm) {
+          if (isConfirm) {
+            return showAnswerKeys(response);
+          } else {
+            return newScale();
+          }
+        });
+        updateScore();
+      }
+
+      function showAnswerKeys(response) {
+        offset = setOffset();
+        var constructed = [];
+	for (var i=0; i<response.length; i++) {
+	  constructed.push(response[i] + offset);
+        }
+        for (var i=0; i<constructed.length; i++) {
+          document.getElementById(constructed[i]).style.background = "red";
+        } 
+      }
+
+      function clearAnswer() {
+        response = [];
+        for (var i=0; i<24; i++) {
+          var key = document.getElementById(i);
+          if (key.classList.contains('black-key')) {
+            key.style.background = "linear-gradient(45deg, #222 0%,#555 100%)";
+          } else {
+            key.style.background = "white";
+          }
+        }
+      }
+
+      function newScale() {
+        clearAnswer();
+        var newScale = pickKeyAndScale();
+        document.getElementById('scale-name').innerHTML = newScale;
+        answer = answers[masterScale];
+      }
+
+      function responseComplete() {
+        return response.length === answers[masterScale].length;
+      }
+
+      document.getElementById('new-scale-button').addEventListener('click', function () {
+        newScale();
+      });
+
+      var notes = document.getElementsByClassName('note');
+      for (var i = 0; i < notes.length; i++) {
+        notes[i].addEventListener('click', function() {
+          if (masterScale && masterTonic) {
+            var id = this.getAttribute('id');
+            response.push(parseFloat(id));
+            if (responseComplete()) {
+              return evaluateResponse(response);
+            }
+          }
+        });
+      }
+
+
+    </script>
+  </body>
+</html>
